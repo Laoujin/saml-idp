@@ -5,7 +5,7 @@
 var userProfile = {
 	// SAML Subject ID == Okta Login
 	id: 'saml.jackson@example.com',
-	firstName: 'Saml',
+	firstName: '2',
 	lastName: 'Jackson',
 	email: 'saml.jackson@example.com'
 }
