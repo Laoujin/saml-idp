@@ -113,10 +113,10 @@ app.post(['/', '/idp'], function(req, res) {
         "user" : user
     });
   } else {
-    req.user.id = req.body.login;
+    //req.user.id = req.body.login;
     req.user.firstName = req.body.firstName;
-    req.user.lastName = req.body.lastName;
-    req.user.email = req.body.email;
+    //req.user.lastName = req.body.lastName;
+    //req.user.email = req.body.email;
     requestedAcs = req.body.acs;
     idpHandler(req, res);
   }
