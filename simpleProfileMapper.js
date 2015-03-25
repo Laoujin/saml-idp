@@ -6,14 +6,17 @@ function SimpleProfileMapper (pu) {
   this.nameIdFormat = 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress';
 }
 
+var attributeMappings = require("./config/attributeMappings.js");
+
 SimpleProfileMapper.prototype.getClaims = function() {
   var claims = {};
 
   claims[this.nameIdFormat]  = this._pu.id;
-  claims['Email']      = this._pu.email;
-  claims['FirstName']  = this._pu.firstName
-  claims['LastName']    = this._pu.lastName;
- 
+  var that = this;
+  attributeMappings.forEach(function(attributeMapping){
+    claims[attributeMapping.claimName] = that._pu[attributeMapping.attributeName];
+  });
+
   return claims;
 };
 

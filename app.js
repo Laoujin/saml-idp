@@ -14,13 +14,12 @@ var express             = require('express'),
     cookieParser        = require('cookie-parser'),
     bodyParser          = require('body-parser'),
     samlp               = require('samlp'),
-    config              = require('./config.js'),
     SimpleProfileMapper = require('./simpleProfileMapper.js');
 
 
 var argv = require('yargs')
     .usage('Simple IdP\nUsage: $0')
-    .example('$0 --acs http://acme.okta.com/auth/saml20/exampleidp --aud https://www.okta.com/saml2/service-provider/spf5aFRRXFGIMAYXQPNV', 
+    .example('$0 --acs http://acme.okta.com/auth/saml20/exampleidp --aud https://www.okta.com/saml2/service-provider/spf5aFRRXFGIMAYXQPNV',
         '\n\nStart IdP web server minting SAML assertions for service provider ACS URL and audience')
     .default({ p: 7000, iss: 'urn:example:idp'})
     .alias('p', 'port')
@@ -47,7 +46,6 @@ console.log('SP Audience URI:\n\t' + argv.audience);
 console.log('Default RelayState:\n\t' + argv.relaystate);
 console.log();
 
-
 var requestedAcs;
 // idp options
 var idpOptions = {
@@ -55,9 +53,9 @@ var idpOptions = {
   cert:                 fs.readFileSync(path.join(__dirname, 'server-cert.pem')),
   key:                  fs.readFileSync(path.join(__dirname, 'server-key.pem')),
   audience:             argv.audience,
-  recipient:            argv.acs, 
+  recipient:            argv.acs,
   destination:          argv.acs,
-  digestAlgorithm:      'sha1',      
+  digestAlgorithm:      'sha1',
   signatureAlgorithm:   'rsa-sha1',
   RelayState:           argv.relaystate,
   profileMapper:        SimpleProfileMapper,
@@ -71,6 +69,8 @@ var idpHandler = samlp.auth(idpOptions);
 
 // globals
 var app    = express();
+app.users = require('./config/users.js');
+
 var server = http.createServer(app);
 
 // environment
@@ -88,19 +88,12 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-// add default user to request
-app.use(function(req,res,next){
-    req.user = config.user;
-    next();
-});
-
 
 // add routes
 app.get(['/', '/idp'], function(req, res) {
-    var user = req.user;
     samlp.parseRequest(req, function(err, data){
       res.render('user', {
-          "user" : user,
+          "users" : app.users,
           "acs" : data ? data.assertionConsumerServiceURL : null
       });
     });
@@ -113,10 +106,8 @@ app.post(['/', '/idp'], function(req, res) {
         "user" : user
     });
   } else {
-    //req.user.id = req.body.login;
-    req.user.firstName = req.body.firstName;
-    //req.user.lastName = req.body.lastName;
-    //req.user.email = req.body.email;
+    var user = app.users.filter(function(u){return u.user_id.toString() === req.body.user_id.toString();})[0];
+    req.user = user;
     requestedAcs = req.body.acs;
     idpHandler(req, res);
   }
@@ -146,15 +137,15 @@ console.log('starting server...');
 server.listen(app.get('port'), function() {
   var address  = server.address(),
       hostname = os.hostname();
-      baseUrl  = address.address === '0.0.0.0' ? 
+      baseUrl  = address.address === '0.0.0.0' ?
         'http://' + hostname + ':' + address.port :
-        'http://localhost:' + address.port
-  
+        'http://localhost:' + address.port;
+
   console.log('listening on port: ' + app.get('port'));
   console.log();
   console.log('urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST');
-  console.log('\t=> ' + baseUrl + '/idp')
+  console.log('\t=> ' + baseUrl + '/idp');
   console.log('urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect');
-  console.log('\t=> ' + baseUrl + '/idp')
+  console.log('\t=> ' + baseUrl + '/idp');
   console.log();
 });
