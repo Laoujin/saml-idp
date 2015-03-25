@@ -6,7 +6,7 @@
 	  <div class="panel-body">
 
 			<form class="form-horizontal" role="form" method="POST">
-				
+
 				<input type='hidden' name="acs" value='{{acs}}'/>
 
 				<div class="form-group">
@@ -15,12 +15,10 @@
 				  </label>
 
 				  <div class="col-sm-9">
-				    <select id="firstName" class="form-control" name="firstName">
-				    	<option value="54fd5a292fba14098cceefb0">Luc De Meyer (Messaging, Memo, Briefing, Profile, FedPol, Wtm)</option>
-				    	<option value="54fd5a292fba14098ccef10f">John Van Breda (Messaging, Memo, Briefing, Profile, FedPol, Wtm)</option>
-				    	<option value="54fd5a292fba14098ccef12b">Luc Vermeire (Messaging, Memo, Briefing, Profile, FedPol, Wtm)</option>
-				    	<option value="54fd5a292fba14098ccef169">Paul Van Den Broeck (Messaging, Memo, Briefing, Profile, FedPol, Wtm)</option>
-				    	<option value="UserWithoutAccess">UserWithoutAccess (None)</option>
+				    <select id="id" class="form-control" name="user_id">
+				    	{{#each users}}
+				    		<option value="{{this.user_id}}">{{this.name}}</option>
+				    	{{/each}}
 				    </select>
 				  </div>
 				</div>
